@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "artificial-analysis": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "AA_API_KEY": "${AA_API_KEY}"
+      }
+    }
+  }
+}

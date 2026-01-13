@@ -1,0 +1,8 @@
+src/
+*.ts
+tsconfig.json
+.claude-plugin/
+.mcp.json
+.gitignore
+SPEC.md
+node_modules/
