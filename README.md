@@ -1,114 +1,91 @@
-# Artificial Analysis MCP Server
+# Artificial Analysis MCP Worker
 
-An MCP (Model Context Protocol) server that provides LLM model pricing, speed metrics, and benchmark scores from [Artificial Analysis](https://artificialanalysis.ai).
+A stateless, remote MCP server for Artificial Analysis, deployed on Cloudflare Workers and protected with GitHub OAuth.
 
-## Features
+The model tools use Artificial Analysis's Free language-model API. Responses include
+the Intelligence Index version and the Free-tier model data. The existing blended
+price, math, MMLU-Pro, and GPQA sort inputs are retained as legacy compatibility
+options; if the legacy endpoint is unavailable, the tool returns unsorted Free data
+with a warning.
 
-- Get real-time pricing for 300+ LLM models (input/output/blended rates)
-- Compare speed metrics (tokens/sec, time to first token)
-- Access benchmark scores (Intelligence Index, Coding Index, MMLU-Pro, GPQA, and more)
-- Filter by provider (OpenAI, Anthropic, Google, etc.)
-- Sort by any metric
+## Prerequisites
 
-## Installation
+- Node.js 20 or newer
+- A Cloudflare account
+- An Artificial Analysis API key
+- A GitHub OAuth App
 
-### Claude Code
+## Setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Log in to Cloudflare:
+
+   ```bash
+   npx wrangler login
+   ```
+
+3. Create the OAuth KV namespace:
+
+   ```bash
+   npx wrangler kv namespace create OAUTH_KV
+   ```
+
+   Copy the returned namespace ID into `wrangler.jsonc`.
+
+4. Deploy once to reserve the Worker URL:
+
+   ```bash
+   npm run deploy
+   ```
+
+5. Create a GitHub OAuth App with:
+
+   - Homepage URL: `https://artificial-analysis-mcp.<YOUR_WORKERS_SUBDOMAIN>.workers.dev`
+   - Authorization callback URL: `https://artificial-analysis-mcp.<YOUR_WORKERS_SUBDOMAIN>.workers.dev/callback`
+
+6. Add secrets:
+
+   ```bash
+   npx wrangler secret put AA_API_KEY
+   npx wrangler secret put GITHUB_CLIENT_ID
+   npx wrangler secret put GITHUB_CLIENT_SECRET
+   npx wrangler secret put COOKIE_ENCRYPTION_KEY
+   npx wrangler secret put ALLOWED_GITHUB_USERNAME
+   ```
+
+   Generate `COOKIE_ENCRYPTION_KEY` with:
+
+   ```bash
+   openssl rand -hex 32
+   ```
+
+7. Deploy again:
+
+   ```bash
+   npm run deploy
+   ```
+
+Your MCP endpoint is:
+
+```text
+https://artificial-analysis-mcp.<YOUR_WORKERS_SUBDOMAIN>.workers.dev/mcp
+```
+
+## Local development
+
+Create `.dev.vars` with the five secret values, then run:
 
 ```bash
-claude mcp add artificial-analysis -e AA_API_KEY=your-key -- npx -y artificial-analysis-mcp
+npm run dev
 ```
 
-Or install from GitHub:
+Run the adapter and sorting tests with:
 
 ```bash
-claude /mcp add https://github.com/davidhariri/artificial-analysis-mcp
+npm test
 ```
-
-### Manual Configuration
-
-Add to your Claude settings (`~/.claude/settings.json`):
-
-```json
-{
-  "mcpServers": {
-    "artificial-analysis": {
-      "command": "npx",
-      "args": ["-y", "artificial-analysis-mcp"],
-      "env": {
-        "AA_API_KEY": "your-api-key"
-      }
-    }
-  }
-}
-```
-
-## Configuration
-
-| Environment Variable | Required | Description |
-|---------------------|----------|-------------|
-| `AA_API_KEY` | Yes | Your Artificial Analysis API key |
-
-Get your API key at [artificialanalysis.ai](https://artificialanalysis.ai).
-
-## Tools
-
-### `list_models`
-
-List all available LLM models with optional filtering and sorting.
-
-**Parameters:**
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `creator` | string | No | Filter by model creator (e.g., "OpenAI", "Anthropic") |
-| `sort_by` | string | No | Sort field (see below) |
-| `sort_order` | string | No | "asc" or "desc" (default: "desc") |
-| `limit` | number | No | Maximum results to return |
-
-**Sort fields:** `price_input`, `price_output`, `price_blended`, `speed`, `ttft`, `intelligence_index`, `coding_index`, `math_index`, `mmlu_pro`, `gpqa`, `release_date`
-
-**Example usage:**
-- "List the top 5 fastest models"
-- "Show me Anthropic models sorted by price"
-- "What are the cheapest models with high intelligence scores?"
-
-### `get_model`
-
-Get detailed information about a specific model.
-
-**Parameters:**
-
-| Name | Type | Required | Description |
-|------|------|----------|-------------|
-| `model` | string | Yes | Model name or slug (e.g., "gpt-4o", "claude-4-5-sonnet") |
-
-**Returns:** Complete model details including pricing, speed metrics, and all benchmark scores.
-
-**Example usage:**
-- "Get pricing for GPT-4o"
-- "What are Claude 4.5 Sonnet's benchmark scores?"
-
-## Model Data
-
-Each model includes:
-
-- **Pricing**: Input/output/blended rates per 1M tokens (USD)
-- **Speed**: Output tokens per second, time to first token
-- **Benchmarks**: Intelligence Index, Coding Index, Math Index, MMLU-Pro, GPQA, LiveCodeBench, and more
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Build
-npm run build
-
-# Run locally
-AA_API_KEY=your-key node dist/index.js
-```
-
-## License
-
-MIT

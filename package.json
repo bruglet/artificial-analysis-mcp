@@ -1,52 +1,28 @@
 {
-  "name": "artificial-analysis-mcp",
+  "name": "artificial-analysis-mcp-worker",
   "version": "1.0.0",
-  "description": "MCP server for Artificial Analysis API - get LLM model pricing, speed, and benchmarks",
-  "main": "dist/index.js",
+  "private": true,
   "type": "module",
-  "bin": {
-    "artificial-analysis-mcp": "dist/index.js"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run build",
-    "start": "node dist/index.js",
-    "dev": "tsc --watch"
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit",
+    "cf-typegen": "wrangler types"
   },
-  "keywords": [
-    "mcp",
-    "model-context-protocol",
-    "artificial-analysis",
-    "llm",
-    "pricing",
-    "benchmarks",
-    "claude",
-    "ai-models"
-  ],
-  "author": "David Hariri",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/davidhariri/artificial-analysis-mcp.git"
-  },
-  "bugs": {
-    "url": "https://github.com/davidhariri/artificial-analysis-mcp/issues"
-  },
-  "homepage": "https://github.com/davidhariri/artificial-analysis-mcp#readme",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "zod": "^3.25.0"
+    "@cloudflare/workers-oauth-provider": "^0.8.2",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "agents": "^0.20.0",
+    "hono": "^4.12.27",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "@cloudflare/workers-types": "^5.20260728.1",
+    "@types/node": "^26.0.1",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.105.0"
   }
 }
